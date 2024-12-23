@@ -40,7 +40,6 @@ class UserManager: ObservableObject {
         return context
     }
 
-    // Register User
     func register(username: String, email: String, password: String) {
         let newUser = User(username: username, email: email, password: password)
         context.insert(newUser)
@@ -53,7 +52,6 @@ class UserManager: ObservableObject {
         }
     }
 
-    // Login User
     func login(email: String, password: String) {
         let fetchDescriptor = FetchDescriptor<User>(
             predicate: #Predicate { $0.email == email && $0.password == password }
@@ -63,8 +61,6 @@ class UserManager: ObservableObject {
             if let user = try context.fetch(fetchDescriptor).first {
                 currentUser = user
                 isLoggedIn = true
-
-                // 儲存用戶 ID 以供重新加載
                 UserDefaults.standard.set(user.id, forKey: "currentUserID")
                 print("Login successful for user: \(user.username)")
             } else {
@@ -75,14 +71,10 @@ class UserManager: ObservableObject {
         }
     }
 
-    // Logout User
     func logout() {
         currentUser = nil
         isLoggedIn = false
-
-        // Clear the saved user ID
         UserDefaults.standard.removeObject(forKey: "currentUserID")
-
         print("User logged out.")
     }
 }
