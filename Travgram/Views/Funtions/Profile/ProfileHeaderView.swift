@@ -1,10 +1,3 @@
-//
-//  ProfileHeaderView.swift
-//  Travgram
-//
-//  Created by Jesse Liang on 2024/12/22.
-//
-
 import SwiftUI
 
 struct ProfileHeaderView: View {
@@ -15,9 +8,7 @@ struct ProfileHeaderView: View {
         VStack(spacing: 10) {
             // Profile Picture
             HStack {
-                if let profileImageURL = user.profileImageURL,
-                   let url = URL(string: profileImageURL),
-                   let imageData = try? Data(contentsOf: url),
+                if let imageData = user.profileImageURL.flatMap({ Data(base64Encoded: $0) }),
                    let uiImage = UIImage(data: imageData) {
                     Image(uiImage: uiImage)
                         .resizable()

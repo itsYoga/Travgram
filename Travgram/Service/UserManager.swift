@@ -5,6 +5,7 @@ import os
 class UserManager: ObservableObject {
     @Published var currentUser: User?
     @Published var isLoggedIn: Bool = false
+    @Published var trips: [Trip] = [] // 支援行程功能
 
     let modelContext: ModelContext
     private let logger = Logger(subsystem: "com.travgram.UserManager", category: "UserManager")
@@ -12,8 +13,10 @@ class UserManager: ObservableObject {
     init(context: ModelContext) {
         self.modelContext = context
         rehydrateUser()
+        fetchTrips()
     }
 
+    // MARK: - User Management
     private func rehydrateUser() {
         guard let savedUserID = UserDefaults.standard.string(forKey: "currentUserID") else {
             logger.info("No saved user ID found in UserDefaults.")
@@ -104,5 +107,42 @@ class UserManager: ObservableObject {
         let emailRegEx = "^[A-Z0-9a-z._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
         let emailTest = NSPredicate(format: "SELF MATCHES %@", emailRegEx)
         return emailTest.evaluate(with: email)
+    }
+
+    // MARK: - Trip Management
+    func fetchTrips() {
+        let fetchDescriptor = FetchDescriptor<Trip>()
+        do {
+            trips = try modelContext.fetch(fetchDescriptor)
+        } catch {
+            logger.error("Failed to fetch trips: \(error.localizedDescription, privacy: .public)")
+        }
+    }
+
+    func addTrip(name: String, date: Date, type: TripType, budget: Double, expenses: Double) {
+        guard let currentUser = currentUser else {
+            logger.warning("Cannot add trip without a logged-in user.")
+            return
+        }
+
+        let newTrip = Trip(name: name, date: date, type: type, budget: budget, expenses: expenses)
+        modelContext.insert(newTrip)
+
+        saveChanges()
+        fetchTrips()
+    }
+
+    func deleteTrip(_ trip: Trip) {
+        modelContext.delete(trip)
+        saveChanges()
+        fetchTrips()
+    }
+
+    func saveChanges() {
+        do {
+            try modelContext.save()
+        } catch {
+            logger.error("Failed to save changes: \(error.localizedDescription, privacy: .public)")
+        }
     }
 }

@@ -1,10 +1,4 @@
-//
-//  EditProfileView.swift
-//  Travgram
-//
-//  Created by Jesse Liang on 2024/12/24.
-//
-
+import PhotosUI
 import SwiftUI
 import SwiftData
 
@@ -13,15 +7,46 @@ struct EditProfileView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.modelContext) private var context
 
-    @State private var profileImageURL: String = ""
+    @State private var profileImage: UIImage?
     @State private var fullname: String = ""
     @State private var bio: String = ""
+    @State private var selectedImage: PhotosPickerItem?
 
     var body: some View {
         NavigationStack {
             Form {
                 Section(header: Text("Profile Picture")) {
-                    TextField("Profile Image URL", text: $profileImageURL)
+                    VStack {
+                        if let profileImage = profileImage {
+                            Image(uiImage: profileImage)
+                                .resizable()
+                                .scaledToFill()
+                                .frame(width: 80, height: 80)
+                                .clipShape(Circle())
+                        } else {
+                            Circle()
+                                .fill(Color.gray)
+                                .frame(width: 80, height: 80)
+                                .overlay(
+                                    Text("No Image")
+                                        .foregroundColor(.white)
+                                        .font(.caption)
+                                )
+                        }
+                        PhotosPicker(selection: $selectedImage, matching: .images) {
+                            Text("Choose Profile Picture")
+                                .font(.footnote)
+                                .foregroundColor(.blue)
+                        }
+                        .onChange(of: selectedImage) { newItem in
+                            Task {
+                                if let data = try? await newItem?.loadTransferable(type: Data.self),
+                                   let uiImage = UIImage(data: data) {
+                                    profileImage = uiImage
+                                }
+                            }
+                        }
+                    }
                 }
 
                 Section(header: Text("Full Name")) {
@@ -53,13 +78,18 @@ struct EditProfileView: View {
     }
 
     private func loadProfileData() {
-        profileImageURL = user.profileImageURL ?? ""
         fullname = user.fullname ?? ""
         bio = user.bio ?? ""
+        if let imageData = user.profileImageURL.flatMap({ Data(base64Encoded: $0) }) {
+            profileImage = UIImage(data: imageData)
+        }
     }
 
     private func saveChanges() {
-        user.profileImageURL = profileImageURL.isEmpty ? nil : profileImageURL
+        if let profileImage = profileImage,
+           let imageData = profileImage.jpegData(compressionQuality: 0.8) {
+            user.profileImageURL = imageData.base64EncodedString()
+        }
         user.fullname = fullname.isEmpty ? nil : fullname
         user.bio = bio.isEmpty ? nil : bio
 

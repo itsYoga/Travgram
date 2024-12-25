@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+
 struct MainPageView: View {
     @EnvironmentObject var userManager: UserManager
 
@@ -19,6 +20,18 @@ struct MainPageView: View {
                         Label("Discover", systemImage: "magnifyingglass.circle.fill")
                     }
 
+                // Trips Tab
+                TripListView()
+                    .tabItem {
+                        Label("Trips", systemImage: "airplane.circle.fill")
+                    }
+                
+                // Statistics Tab
+                TripStatisticsView()
+                    .tabItem {
+                        Label("Statistics", systemImage: "chart.bar.fill")
+                    }
+
                 // Profile Tab with Logout
                 ProfileView()
                     .tabItem {
@@ -32,17 +45,4 @@ struct MainPageView: View {
     }
 }
 
-#Preview {
-    do {
-        let container = try ModelContainer(for: User.self)
-        let context = container.mainContext
-        let mockUserManager = UserManager(context: context)
 
-        mockUserManager.isLoggedIn = true
-
-        return MainPageView()
-            .environmentObject(mockUserManager)
-    } catch {
-        return Text("Error initializing preview")
-    }
-}
