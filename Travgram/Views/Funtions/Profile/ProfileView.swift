@@ -27,6 +27,9 @@ struct ProfileView: View {
                 // Main Content
                 ScrollView {
                     VStack(spacing: 30) {
+                        Spacer()
+                            .frame(height: 50) // Add a spacer to push the content lower
+
                         // Profile Header
                         if let currentUser = userManager.currentUser {
                             ProfileHeaderView(user: currentUser, isEditing: $isEditingProfile)

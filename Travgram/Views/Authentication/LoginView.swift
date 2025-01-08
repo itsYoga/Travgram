@@ -42,10 +42,10 @@ struct LoginView: View {
                 .padding(.trailing, 28)
                 
                 // 刪除所有用戶按鈕
-                Button("Delete All Users") {
-                    deleteAllUsers()
-                    showDeletionSuccess = true // 顯示成功提示
-                }
+               // Button("Delete All Users") {
+                //    deleteAllUsers()
+                //    showDeletionSuccess = true // 顯示成功提示
+              //  }
                 .alert("Deletion Successful", isPresented: $showDeletionSuccess) {
                     Button("OK", role: .cancel) {}
                 }
